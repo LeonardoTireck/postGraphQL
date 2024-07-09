@@ -1,12 +1,12 @@
 import path from "path";
 import express from "express";
 import bodyParser from "body-parser";
-import feedRoutes from "./routes/feed.js";
-import authRoutes from "./routes/auth.js";
 import mongoose from "mongoose";
 import multer from "multer";
-import socket from "./socket.js";
-import 'dotenv/config';
+import { graphqlHTTP } from "express-graphql";
+import "dotenv/config";
+import graphqlSchema from "./graphql/schema.js";
+import graphqlResolver from "./graphql/resolvers.js";
 
 const app = express();
 
@@ -48,8 +48,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -60,15 +65,9 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(
-    process.env.MONGODB_KEY
-  )
+  .connect(process.env.MONGODB_KEY)
   .then((result) => {
-    const server = app.listen(process.env.PORT);
-    const io = socket.init(server);
-    io.on("connection", (socket) => {
-      console.log("CLIENT Connected");
-    });
+    app.listen(process.env.PORT);
   })
   .catch((err) => {
     console.log(err);
