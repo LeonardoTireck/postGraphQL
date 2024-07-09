@@ -7,6 +7,7 @@ import { graphqlHTTP } from "express-graphql";
 import "dotenv/config";
 import graphqlSchema from "./graphql/schema.js";
 import graphqlResolver from "./graphql/resolvers.js";
+import auth from "./middleware/auth.js";
 
 const app = express();
 
@@ -50,6 +51,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(auth);
 
 app.use(
   "/graphql",
