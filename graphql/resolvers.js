@@ -1,6 +1,8 @@
 import { User } from "../models/user.js";
 import bcrypt from "bcryptjs";
 import validator from "validator";
+import jwt from "jsonwebtoken";
+import "dotenv/config";
 
 export default {
   createUser: async function ({ userInput }, req) {
@@ -33,5 +35,28 @@ export default {
     });
     const createdUser = await user.save();
     return { ...createdUser._doc, _id: createdUser._id.toString() };
+  },
+  login: async function ({ email, password }) {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      const error = new Error("User not found.");
+      error.code = 401;
+      throw error;
+    }
+    const isEqual = await bcrypt.compare(password, user.password);
+    if (!isEqual) {
+      const error = new Error("Wrong password.");
+      error.code = 401;
+      throw error;
+    }
+    const token = jwt.sign(
+      {
+        userId: user._id.toString(),
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1hr" }
+    );
+    return { token: token, userId: user._id.toString() };
   },
 };
