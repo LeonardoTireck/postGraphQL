@@ -38,6 +38,22 @@ export default {
     return { ...createdUser._doc, _id: createdUser._id.toString() };
   },
   login: async function ({ email, password }) {
+    const errors = [];
+    if (!validator.isEmail(email)) {
+      errors.push({ message: "Email is invalid." });
+    }
+    if (
+      validator.isEmpty(password) ||
+      !validator.isLength(password, { min: 5 })
+    ) {
+      errors.push({ message: "Password too short!" });
+    }
+    if (errors.length > 0) {
+      const error = new Error("Invalid input.");
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
     const user = await User.findOne({ email: email });
     if (!user) {
       const error = new Error("User not found.");
