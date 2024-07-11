@@ -30,6 +30,10 @@ export default buildSchema(`
         totalPosts: Int!
     }
 
+    type Status {
+        status: String!
+    }
+
     input UserInputData {
         email: String!
         name: String!
@@ -46,6 +50,7 @@ export default buildSchema(`
         login(email: String!, password: String!): AuthData!
         posts(page: Int): PostData!
         post(id: ID!): Post!
+        status: Status!
     }
 
     type RootMutation {
@@ -53,6 +58,7 @@ export default buildSchema(`
         createPost(postInput: PostInputData): Post!
         updatePost(id: ID!, postInput: PostInputData): Post!
         deletePost(id: ID!): Boolean
+        updateStatus(newStatus: String!): Status!
     }
     
     schema {
